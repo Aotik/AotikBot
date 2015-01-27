@@ -1,0 +1,25 @@
+[script]
+n0=on *:text:!linksilence *:#:{
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    var %silence_file = $mircdirsilencetoggles\ $+ $chan $+ .ini
+n4=    if ($2 == off ) {
+n5=      if ($readini($qt(%silence_file),n,$chan,links)) { 
+n6=        msg $chan $nick -> Link notifications are already enabled
+n7=      }
+n8=      else {
+n9=        writeini $qt(%silence_file) $chan links on
+n10=        msg $chan $nick -> Link notifications have been enabled
+n11=      }
+n12=    }
+n13=    elseif ($2 == on) {
+n14=      if ($readini($qt(%silence_file),n,$chan,links)) { 
+n15=        remini $qt(%silence_file) $chan links on
+n16=        msg $chan $nick -> Link notifications have been disabled
+n17=      }
+n18=      else {
+n19=        msg $chan $nick -> Link notifications are already disabled
+n20=      }
+n21=    }
+n22=  }
+n23=}
