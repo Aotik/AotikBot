@@ -1,0 +1,18 @@
+[script]
+n0=ON !*:TEXT:!ctimeout *:#: {
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    if ($2) {
+n4=      if ($3) {
+n5=        msg $chan $nick -> User: $2 has been purged for $3 - <rekt>
+n6=        msg $chan /timeout $2 $3
+n7=      }
+n8=      else if (!$3) {
+n9=        msg $chan $nick -> Specify for how long you want to timeout the user for
+n10=      }
+n11=    }
+n12=    elseif (!$2) {
+n13=      msg $chan $nick -> Specify which user you want to timeout
+n14=    }
+n15=  }
+n16=}
