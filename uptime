@@ -1,0 +1,41 @@
+[script]
+n0=ON !*:TEXT:!uptime:#: {
+n1=  var %s = upt_ $+ $ticks $+ $rand(1,1000000)
+n2=  if ($sock(%s)) { sockclose %s }
+n3=  sockopen %s nightdev.com 80
+n4=  sockmark %s $nick $chan
+n5=}
+n6=
+n7=ON *:SOCKOPEN:upt_*: {
+n8=  if ($sockerr) {
+n9=    var %n = $gettok($sock($sockname).mark,1,32)
+n10=    var %c = $gettok($sock($sockname).mark,2,32)
+n11=    if ($me ison %c) && (%n ison %c) { .msg %c $nick -> error, there was an connection opening error }
+n12=    sockclose $sockname
+n13=    return
+n14=  }
+n15=  sockwrite -n $sockname GET /hosted/uptime.php?channel= $+ $remove($gettok($sock($sockname).mark,2,32),$chr(35)) HTTP/1.1
+n16=  sockwrite -n $sockname Host: $sock($sockname).addr
+n17=  sockwrite -n $sockname User-Agent: */*
+n18=  sockwrite -n $sockname Connection: close
+n19=  sockwrite -n $sockname $crlf
+n20=}
+n21=
+n22=ON *:SOCKREAD:upt_*: {
+n23=  if ($sockerr) {
+n24=    var %n = $gettok($sock($sockname).mark,1,32)
+n25=    var %c = $gettok($sock($sockname).mark,2,32)
+n26=    if ($me ison %c) && (%n ison %c) { .msg %c $nick -> error, there was an connection reading error }
+n27=    sockclose $sockname
+n28=    return
+n29=  }
+n30=  var %r
+n31=  sockread %r
+n32=  var %n = $gettok($sock($sockname).mark,1,32)
+n33=  var %c = $gettok($sock($sockname).mark,2,32)
+n34=  if (*channel is not* iswm %r) { .msg %c %n -> the channel is not live | sockclose $sockname }
+n35=  if ($chr(44) !isin %r) && (*minutes* iswm %r) || (*seconds* iswm %r) { .msg %c $nick -> channel uptime %r }
+n36=  if (*date* !iswm %r) && ($chr(44) isin %r) {
+n37=    if ($me ison %c) && (%n ison %c) { .msg %c %n -> channel uptime: %r }
+n38=  }
+n39=}
