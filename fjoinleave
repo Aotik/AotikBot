@@ -1,0 +1,28 @@
+[script]
+n0=ON !*:TEXT:*:#: {
+n1=  if ($1 == !fjoin) {
+n2=    if ($nick == aotik) {
+n3=      var %fj = $chr(35) $+ $2
+n4=      if ($read(joinlist $+ .txt,nw,%fj)) { msg $chan $nick -> I am already on channel %fj | return }
+n5=      msg $chan Joining channel %fj $+ ...
+n6=      .join -n %fj
+n7=      write joinlist $+ .txt %fj
+n8=      .timer 1 2 msg $chan $nick -> I have succcessfully joined channel %fj
+n9=    }
+n10=  }
+n11=  elseif ($1 == !leave) || ($1 == !part) {
+n12=    var %c = $chr(35) $+ $nick
+n13=    var %f = joinlist.txt
+n14=    if ($chan != %c) { return }
+n15=    msg $chan $nick -> I'm leaving now BibleThump
+n16=    remini %f $chan %c
+n17=    .part $chan 
+n18=  }
+n19=  elseif ($1 == !fleave) {
+n20=    var %f = joinlist.txt
+n21=    var %fl = $chr(35) $+ $2  
+n22=    remini %f $chan %fl
+n23=    .part %fl
+n24=    msg $chan $nick -> I'm leaving %fl $+ , bye!
+n25=  }
+n26=}
