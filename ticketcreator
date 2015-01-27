@@ -1,0 +1,37 @@
+[script]
+n0=on *:TEXT:!tickets *:#:{
+n1=  if ($2 > 10) {
+n2=    msg $chan Sorry $nick but you can only up to 20 tickets
+n3=  }
+n4=  if ($2 < 11) {
+n5=    var %i = 0
+n6=    var %ticket = $2
+n7=    var %topic = $+(#,.,$nick)
+n8=    var %user = $readini(Points.ini,$+(#,.,$nick),Points)
+n9=    var %raffle_file = $mircdirraffleusers\ $+ users $+ . $+ $chan $+ .ini
+n10=    var %ti = $readini(%raffle_file,n,$chan,$nick)
+n11=    var %end = 10 * %ticket
+n12=    var %delete = %user - %end
+n13=    var %newtickets = $calc(%ticket + %ti)
+n14=
+n15=    if (%newtickets < 21) {
+n16=      if (%delete > 0) {
+n17=        writeini -n Points.ini %topic Points %delete
+n18=        while (%i < %ticket) {
+n19=          write Raffle.txt $nick
+n20=          %i = %i + 1
+n21=        }
+n22=        writeini $qt(%raffle_file) $chan $nick %newtickets
+n23=        msg $chan $nick you now have %newtickets
+n24=        msg $chan $nick you have bought %ticket tickets with %end points.
+n25=      }
+n26=      if (%delete < 0) {
+n27=        msg $chan Sorry $nick you don't have enough points to buy %ticket tickets!
+n28=      }
+n29=
+n30=    }
+n31=    else {
+n32=      msg $chan You can't buy a more than a total of 20 tickets
+n33=    }
+n34=  }
+n35=}
