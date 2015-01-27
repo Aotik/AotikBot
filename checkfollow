@@ -1,0 +1,27 @@
+[script]
+n0=ON !*:TEXT:!checkfollow *:#: {
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    tw_check_follow $remove($chan,$chr(35)) $2
+n4=  }
+n5=}
+n6=
+n7=alias tw_check_follow {
+n8=  if (!$1) { return }
+n9=  var %u = https://api.twitch.tv/kraken/users/ $+ $2 $+ /follows/channels/ $+ $remove($chan,$chr(35)) $+ ?limit=1&nocache= $+ $ticks
+n10=  var %v = twc_ $+ $ticks
+n11=  JSONOpen -ud %v %u
+n12=  if (%JSONError) { var %error = 1 | goto end | return }
+n13=  var %fc = $json(%v,error)
+n14=  if (%fc) { 
+n15=    var %msg = $json(%v,message) 
+n16=    if (is not following isin %msg) { var %status = 0 }
+n17=  }
+n18=  :end
+n19=  var %status = $json(%v,created_at)
+n20=  if (%error) { msg $chan $nick -> $2 is not following the channel | goto end2 }
+n21=  if (!%status) { msg $chan $nick -> $2 is not following the channel }
+n22=  elseif (%status) { msg $chan $nick -> $2 is following the channel }
+n23=  :end2
+n24=  JSONClose %v
+n25=}
