@@ -1,0 +1,96 @@
+[script]
+n0=on *:TEXT:!commands *:#: {
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    if ($2 == list) {
+n4=      var %command_file = commandslist.ini
+n5=      var %x = $ini(%command_file,$chan,0)     
+n6=      var %kk = ''
+n7=
+n8=      if (%x) { 
+n9=        msg $chan $nick -> Sending a query of all available custom commands for $chan
+n10=        while (%x) {
+n11=          var %kk = $ini(%command_file,$chan,%x)
+n12=          var %text = %text %kk
+n13=          dec %x
+n14=        }
+n15=        msg $chan $nick -> Custom commands available %text
+n16=      } 
+n17=      else { 
+n18=        msg $chan $nick -> No custom commands available
+n19=      }
+n20=
+n21=    }
+n22=    elseif ($2 == clearlist) {
+n23=      if (%chc = $chan) || ($nick == aotik) {
+n24=        var %command_file = commandslist.ini
+n25=        var %x = $ini(%command_file,$chan,0)     
+n26=        var %kk = ''
+n27=
+n28=        if (%x) { 
+n29=          while (%x) {
+n30=            var %kk = $ini(%command_file,$chan,%x)
+n31=            remini %command_file $chan %%kk
+n32=            dec %x
+n33=          }
+n34=          msg $chan $nick -> Custom commands list has been cleared
+n35=        } 
+n36=      }
+n37=      else {
+n38=        msg $chan $nick -> This command is only for channel owners
+n39=      }
+n40=    }
+n41=    else {
+n42=      msg $chan $nick -> Wrong command list parameter, use list or clearlist
+n43=    }
+n44=  }
+n45=}
+n46=
+n47=on *:TEXT:!addcommand *:#:{
+n48=  var %chc = $chr(35) $+ $nick
+n49=  if ($chan = %chc) || ($nick isop #) {
+n50=    var %command_file = commandslist.ini 
+n51=    if ($ini(%command_file,$chan,$2) >= 1) {
+n52=      msg $chan $nick -> Command $2 already exists
+n53=    } 
+n54=    else { 
+n55=      writeini %command_file $chan $2 $3-
+n56=      msg $chan $nick -> $2 has been added 
+n57=    }
+n58=
+n59=  }
+n60=}
+n61=
+n62=on *:TEXT:!editcommand *:#:{
+n63=  var %chc = $chr(35) $+ $nick
+n64=  if ($chan = %chc) || ($nick isop #) {
+n65=    var %command_file = commandslist.ini
+n66=    if ($ini(%command_file,$chan,$2) >= 1) {
+n67=      remini %command_file $chan $2
+n68=      writeini %command_file $chan $2 $3-
+n69=      msg $chan $nick -> $2 has been edited to $3-
+n70=    } 
+n71=  }
+n72=}
+n73=
+n74=on *:TEXT:!delcommand *:#:{
+n75=  var %chc = $chr(35) $+ $nick
+n76=  if ($chan = %chc) || ($nick isop #) {
+n77=    var %command_file = commandslist.ini
+n78=    if ($ini(%command_file,$chan,$2) >= 1) {
+n79=      remini %command_file $chan $2
+n80=      msg $chan $nick -> Command $2 has been deleted
+n81=    } 
+n82=    else { 
+n83=      msg $chan $nick -> Command $2 could not be found
+n84=    }
+n85=  }
+n86=}
+n87=
+n88=on *:TEXT:*:#:{
+n89=  var %command_file = commandslist.ini
+n90=  var %t = $readini(%command_file,n,$chan,$1)
+n91=  if ($len(%t)) { 
+n92=    msg # %t
+n93=  }
+n94=}
