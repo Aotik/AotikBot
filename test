@@ -1,0 +1,7 @@
+[script]
+n0=ON !*:TEXT:!test:#: {
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    msg $chan $nick -> Test response on channel: $chan $+ , time: $time $+ , date: $date
+n4=  }
+n5=}
