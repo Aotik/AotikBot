@@ -1,0 +1,71 @@
+[script]
+n0=on *:text:*:#:linkpost $1-
+n1=on *:action:*:#:linkpost $1-
+n2=on *:notice:*:#:linkpost $1-
+n3=ON !*:PART:#: { if ($hfind(permit,$nick)) { hdel permit $nick } }
+n4=
+n5=alias -l linkpost { 
+n6=  var %purge = /^!(links\so(n|ff)|(permit)|(permitoff)|(permitclear)|(permitlist))\b/iS
+n7=  if (($regex($1-,%purge)) && ($regml(1) = permit) && ($nick isop #) && ($$2 ison #)) {
+n8=    if ($hfind(permit,$2)) { msg # $nick -> $qt($2) already has permission to post a link | return }
+n9=    hadd -m permit $2
+n10=    if ($readini($qt(%silence_file),n,$chan,links)) {
+n11=      msg # $2 -> you can now post a link
+n12=    }
+n13=  }
+n14=  if (($regex($1-,%purge)) && ($regml(1) = permitoff) && ($nick isop #) && ($$2 ison #)) {
+n15=    if (!$hfind(permit,$2)) { msg # $nick -> $qt($2) is not in the permissions list | return }
+n16=    hdel permit $2
+n17=    if ($readini($qt(%silence_file),n,$chan,links)) {
+n18=      msg # $2 -> your link permit has been removed
+n19=    }
+n20=  }
+n21=  if (($regex($1-,%purge)) && ($regml(1) = permitclear) && ($nick isop #)) {
+n22=    if (!$hget(permit)) { msg # $nick -> the permissions list is empty | return }
+n23=    var %tot = $hget(permit,0).item
+n24=    hfree permit
+n25=    msg # $nick -> the permissions list has been cleared - ( %tot $+ )
+n26=  }
+n27=  if (($regex($1-,%purge)) && ($regml(1) = permitlist) && ($nick isop #)) {
+n28=    if (!$hget(permit)) { msg # $nick -> the permissions list is empty | return }
+n29=    var %tot = $hget(permit,0).item
+n30=    msg # $nick -> there are ( %tot $+ ) users in the permissions list
+n31=  }
+n32=  if (($regml(1) = links on) && ($nick isop #)) {
+n33=    if (!$istok(%chanon1,#,32)) {
+n34=      set %chanon1 $addtok(%chanon1,#,32)
+n35=      msg # $nick -> link protection has been enabled
+n36=    }
+n37=    else { msg # $nick -> link protection is already enabled }
+n38=  }
+n39=  if (($regml(1) = links off) && ($nick isop #)) {
+n40=    if ($istok(%chanon1,#,32)) {
+n41=      set %chanon1 $remtok(%chanon1,#,1,32)
+n42=      msg # $nick -> link protection is now off
+n43=    }
+n44=    else { msg # $nick -> link protection is already off }
+n45=  }
+n46=  if ($hfind(permit,$nick)) {
+n47=    var %domain com|edu|gov|mil|net|org|biz|info|name|museum|us|ca|uk
+n48=    var %exception /https?:\/\/(?:w{3})?\.(youtube|imgur|ima|test)\.(ninja|eu|com)/
+n49=    var %link /(?<=^|\s)((?>\S{3,5}:\/\/|w{3}\56)\S+)|\56( $+ %domain $+ )\b/iS
+n50=    if ($findtok(%chanon1,#,1,32)) && ($nick !isop #) && ($regex($1-,%link)) && (!$regex($1-,%exception)) {
+n51=      if ($readini($qt(%silence_file),n,$chan,links)) {
+n52=        msg # $nick -> you have now posted your permitted link
+n53=      }
+n54=      hdel permit $nick
+n55=    }
+n56=  }
+n57=  elseif (!$hfind(permit,$nick)) {
+n58=    var %domain com|edu|gov|mil|net|org|biz|info|name|museum|us|ca|uk
+n59=    var %exception /https?:\/\/(?:w{3})?\.(youtube|imgur|ima|test)\.(ninja|eu|com)/
+n60=    var %link /(?<=^|\s)((?>\S{3,5}:\/\/|w{3}\56)\S+)|\56( $+ %domain $+ )\b/iS
+n61=    var %silence_file = $mircdirsilencetoggles\ $+ $chan $+ .ini
+n62=    if ($findtok(%chanon1,#,1,32)) && ($nick !isop $chan) && ($nick != monstercat) && ($regex($1-,%link)) && (!$regex($1-,%exception)) {
+n63=      msg # /timeout $nick 1
+n64=      if ($readini($qt(%silence_file),n,$chan,links)) {
+n65=        msg # $nick -> stop posting links! - (Purge)
+n66=      }
+n67=    }
+n68=  }
+n69=}
