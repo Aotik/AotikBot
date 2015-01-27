@@ -1,0 +1,90 @@
+[script]
+n0=ON *:TEXT:*:#: {
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    if ($1 == !followers) {
+n4=      twitch_stream_followers $remove($chan,$chr(35))
+n5=    }
+n6=    elseif ($1 == !topic) {
+n7=      twitch_stream_status $remove($chan,$chr(35))
+n8=    }
+n9=    elseif ($1 == !game) {
+n10=      twitch_stream_game $remove($chan,$chr(35))
+n11=    }
+n12=    elseif ($1 == !views) {
+n13=      twitch_stream_views $remove($chan,$chr(35))
+n14=    }
+n15=    elseif ($1 == !chatters) {
+n16=      twitch_stream_chatters $remove($chan,$chr(35))
+n17=    }
+n18=  }
+n19=}
+n20=
+n21=alias twitch_stream_followers {
+n22=  var %u = https://api.twitch.tv/kraken/channels/ $+ $1
+n23=  var %v = twc_ $+ $ticks
+n24=  JSONOpen -ud %v %u
+n25=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n26=  var %id = $json(%v,_id)
+n27=  var %followers = $json(%v,followers)
+n28=  if (%id) {
+n29=    msg $chan $nick -> Follower(s): $iif(%followers,$bytes($v1,bd),0)
+n30=    :end
+n31=    JSONClose %v
+n32=  }
+n33=}
+n34=alias twitch_stream_chatters {
+n35=  var %u = http://tmi.twitch.tv/group/user/ $+ $1 $+ /chatters
+n36=  var %v = twc_ $+ $ticks
+n37=  JSONOpen -ud %v %u
+n38=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n39=  var %id = $json(%v,_id)
+n40=  var %chatters = $json(%v,_links,chatter_count)
+n41=  if (%id) {
+n42=    msg $chan $nick -> Chatter(s): $iif(%chatters,$bytes($v1,bd),0)
+n43=    :end
+n44=    JSONClose %v
+n45=  }
+n46=}
+n47=
+n48=alias twitch_stream_status {
+n49=  var %u = https://api.twitch.tv/kraken/channels/ $+ $1
+n50=  var %v = twc_ $+ $ticks
+n51=  JSONOpen -ud %v %u
+n52=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n53=  var %id = $json(%v,_id)
+n54=  var %status = $json(%v,status)
+n55=  if (%id) {
+n56=    msg $chan $nick -> Topic: %status
+n57=    :end
+n58=    JSONClose %v
+n59=  }
+n60=}
+n61=
+n62=alias twitch_stream_game {
+n63=  var %u = https://api.twitch.tv/kraken/channels/ $+ $1
+n64=  var %v = twc_ $+ $ticks
+n65=  JSONOpen -ud %v %u
+n66=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n67=  var %id = $json(%v,_id)
+n68=  var %game = $json(%v,game)
+n69=  if (%id) {
+n70=    msg $chan $nick -> Game: %game
+n71=    :end
+n72=    JSONClose %v
+n73=  }
+n74=}
+n75=
+n76=alias twitch_stream_views {
+n77=  var %u = https://api.twitch.tv/kraken/channels/ $+ $1
+n78=  var %v = twc_ $+ $ticks
+n79=  JSONOpen -ud %v %u
+n80=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n81=  var %id = $json(%v,_id)
+n82=  var %views = $json(%v,views)
+n83=  if (%id) {
+n84=    msg $chan $nick -> Views: %views
+n85=    :end
+n86=    JSONClose %v
+n87=  }
+n88=}
