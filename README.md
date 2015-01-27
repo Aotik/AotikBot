@@ -20,7 +20,7 @@ It is still in the Alpha development stage, and has only been tested on very few
 - Uptime calculation
 - Moderator help
 
-http://www.aotikbot.tv/ - (landing page)
-http://multi.aotikbot.tv/
-http://dashboard.aotikbot.tv/ - (soon to be updated)
-http://docs.aotikbot.tv/ - (soon to be updated)
+br http://www.aotikbot.tv/ - (landing page)
+br http://multi.aotikbot.tv/
+br http://dashboard.aotikbot.tv/ - (soon to be updated)
+br http://docs.aotikbot.tv/ - (soon to be updated)
