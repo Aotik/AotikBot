@@ -1,0 +1,68 @@
+[script]
+n0=on *:TEXT:*:#:{
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    var %giveawayfile = giveawaysetlist.ini
+n4=    var %followfile = followfile.ini
+n5=    if ($1 == !set) {
+n6=      if ($2 == giveaway) {
+n7=        if ($3) && ($3 isnum) {
+n8=          writeini -n  $qt(%giveawayfile) $chan $2 $3
+n9=          msg $chan $nick -> You have set the goal for your giveaway at $3 followers
+n10=        }
+n11=        elseif (!$3) && ($3 !isnum) {
+n12=          msg $chan $nick -> Set the number of followers for your giveaway goal
+n13=        }
+n14=      }
+n15=      elseif ($2 == followergreet) {
+n16=        if ($3) {
+n17=          writeini -n  $qt(%followfile) $chan $2 $3-
+n18=          msg $chan $nick -> Follower greet message has been set to: $3-
+n19=        }
+n20=        elseif (!$3) {
+n21=          msg $chan $nick -> Missing parameter, set the follower greet message
+n22=        }
+n23=
+n24=      }
+n25=    }
+n26=
+n27=    if ($1 == !giveaway) {
+n28=      if ($2) {
+n29=        if ($2 == goal) {
+n30=          twitch_stream_followgiveaway $remove($chan,$chr(35))
+n31=        }
+n32=        elseif ($2 == check) {
+n33=          var %t = $readini(%giveawayfile,n,$chan,giveaway)
+n34=          msg $chan $nick -> The channels giveaway follower goal is: %t
+n35=        }
+n36=      }
+n37=      elseif (!$2) {
+n38=        msg $chan $nick -> Missing parameter, use goal or check
+n39=      }
+n40=
+n41=    }
+n42=  }
+n43=}
+n44=
+n45=
+n46=alias twitch_stream_followgiveaway {
+n47=  var %u = https://api.twitch.tv/kraken/channels/ $+ $1
+n48=  var %v = twc_ $+ $ticks
+n49=  var %giveawayfile = giveawaysetlist.ini
+n50=  JSONOpen -ud %v %u
+n51=  if (%JSONError) { .msg $2 $nick -> Error connecting to the server | goto end | return }
+n52=  var %id = $json(%v,_id)
+n53=  var %followers = $json(%v,followers)
+n54=  var %t = $readini(%giveawayfile,n,$chan,giveaway)
+n55=  var %diff = $calc(%t - %followers)
+n56=  if (%id) {
+n57=    if (%t) {
+n58=      msg $chan $nick -> Followers left till giveaway goal: %diff 
+n59=    }
+n60=    else {
+n61=      msg $chan $nick -> No follower goal has been set
+n62=    }
+n63=    :end
+n64=    JSONClose %v
+n65=  }
+n66=}
