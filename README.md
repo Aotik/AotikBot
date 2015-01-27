@@ -9,6 +9,7 @@ It is still in the Alpha development stage, and has only been tested on very few
 - Giveaways with trigger word
 - Channel info
 - Check follow
+- Follower welcome
 - Viewers
 - Silence
 - Link protection
