@@ -1,0 +1,30 @@
+[script]
+n0=on *:text:!raffle *:#:{
+n1=  var %chc = $chr(35) $+ $nick
+n2=  if ($chan = %chc) || ($nick isop #) {
+n3=    if ($2 == open ) {
+n4=      if ($read(Settings_ $+ $chan $+ .txt,nw,raffle)) { 
+n5=        msg $chan $nick -> A raffle is already open
+n6=      }
+n7=      else {
+n8=        /msg # $nick -> A new raffle has been started, use !tickets "amount"
+n9=        write -n $qt(Settings_ $+ $chan $+ .txt) raffle
+n10=      }
+n11=    }
+n12=    elseif ($2 == close) {
+n13=      if ($read(Settings_ $+ $chan $+ .txt,nw,raffle)) { 
+n14=        var %settingsfile = Settings_ $+ $chan $+ .txt
+n15=        var %line = $readn(Settings_ $+ $chan $+ .txt,nw,raffle)
+n16=        var %raffle_file = $mircdirraffleusers\ $+ users $+ . $+ $chan $+ .ini
+n17=        var %totalraffle = Raffle $+ . $+ txt
+n18=        var %rwinner = $read(%totalraffle,n)
+n19=        write -dl $+ %line %settingsfile
+n20=        remini %raffle_file $chan
+n21=        msg $chan $nick -> The raffle has been closed, the winner is %rwinner
+n22=      }
+n23=      else {
+n24=        msg $chan $nick -> No raffle is open at the moment
+n25=      }
+n26=    }
+n27=  }
+n28=}
