@@ -1,0 +1,16 @@
+[script]
+n0=ON *:TEXT:*:#:{
+n1=  if ($nick isop #) {   
+n2=    if ($1 == !walllength) {
+n3=      set %walllength $+ . $+ $chan $2
+n4=      msg $chan $nick -> purges will now happen on posts with $2 characters or more
+n5=    }
+n6=  }
+n7=  elseif ($($+(%,textwall.,$chan),2)) {
+n8=    if ($nick isop #) { return }
+n9=    if ($len($1-) > $($+(%,walllength.,$chan),2)) {
+n10=      msg # .timeout $nick 1
+n11=      msg $chan $nick -> stop with the huge posts! - (Purge)
+n12=    }
+n13=  }
+n14=}
