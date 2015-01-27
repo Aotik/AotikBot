@@ -1,0 +1,41 @@
+[script]
+n0=on *:TEXT:!checktickets:#:{
+n1=  var %raffle_file = $mircdirraffleusers\ $+ users $+ . $+ $chan $+ .ini
+n2=  var %ti = $readini(%raffle_file,n,$chan,$nick)
+n3=  if (%ti) {
+n4=    msg $chan $nick -> you have %ti tickets
+n5=  }
+n6=  else {
+n7=    msg $chan $nick -> you have 0 tickets
+n8=
+n9=  }
+n10=}
+n11=
+n12=on *:TEXT:!cleartickets:#:{
+n13=  var %raffle_file = $mircdirraffleusers\ $+ users $+ . $+ $chan $+ .ini
+n14=  var %ti = $readini(%raffle_file,n,$chan,$nick)
+n15=  var %refund = $calc(10 * %ti)
+n16=  var %file = Raffle $+ . $+ txt
+n17=  if (%ti) {
+n18=
+n19=    remini %raffle_file $chan $nick
+n20=    msg $chan $nick -> you have have been refunded %refund for %ti tickets
+n21=  }
+n22=  else {
+n23=    msg $chan $nick -> you have dont have any tickets
+n24=
+n25=  }
+n26=}
+n27=
+n28=
+n29=on *:TEXT:!totaltickets:#:{
+n30=  var %raffle_file = $mircdirraffleusers\ $+ users $+ . $+ $chan $+ .ini
+n31=  var %tt = $lines(Raffle.txt)
+n32=  if (%tt) {
+n33=    msg $chan $nick -> total tickets %tt
+n34=  }
+n35=  else {
+n36=    msg $chan $nick -> no tickets in the file
+n37=
+n38=  }
+n39=}
