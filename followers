@@ -1,0 +1,139 @@
+[script]
+n0=ON *:PART:#: {
+n1=  if ($nick == $me) { unset %stream_auto_ [ $+ [ $chan ] ] | .timer[FOLLOWERS_CHECK_ [ $+ [ $chan ] ] off }
+n2=}
+n3=
+n4=ON *:KICK:#: {
+n5=  if ($knick == $me) { unset %stream_auto_ [ $+ [ $chan ] ] | .timer[FOLLOWERS_CHECK_ [ $+ [ $chan ] ] off }
+n6=}
+n7=
+n8=ON *:JOIN:#: {
+n9=  if ($nick == $me) && (%stream_chan_ [ $+ [ $chan ] ]) && (%stream_auto_ [ $+ [ $chan ] ]) { .timer[FOLLOWERS_CHECK_ $+ $chan $+ ] 0 5 twitch_check_new $chan %stream_chan_ [ $+ [ $chan ] ] }
+n10=}
+n11=
+n12=ON !*:TEXT:!*:#: {
+n13=  if ($1 == !autofollow) {
+n14=    if ($nick !isop $chan) { .msg $chan ( return }
+n15=    if (!$2) { .msg $chan $nick -> erro | return }
+n16=    var %opt = $2
+n17=    if (%opt !== ON) && (%opt !== OFF) { return }
+n18=    if (%opt == ON) {
+n19=      if (!%stream_chan_ [ $+ [ $chan ] ]) { .msg $chan $nick -> No stream set, use !setstreamchan to set one | return }
+n20=      if (%stream_auto_ [ $+ [ $chan ] ]) { .msg $chan $nick -> Follower trigger is already running }
+n21=      else {
+n22=        set %stream_auto_ [ $+ [ $chan ] ] $ctime
+n23=        .timer[FOLLOWERS_CHECK_ $+ $chan $+ ] 0 5 twitch_check_new $chan %stream_chan_ [ $+ [ $chan ] ]
+n24=        .msg $chan $nick -> Follower trigger has been enabled      
+n25=      }
+n26=    }
+n27=    if (%opt == OFF) {
+n28=      if (!%stream_chan_ [ $+ [ $chan ] ]) { .msg $chan $nick -> No stream set, use !setstreamchan to set one | return }
+n29=      if (!%stream_auto_ [ $+ [ $chan ] ]) { .msg $chan $nick -> Follower trigger is not running }
+n30=      else {
+n31=        .msg $chan $nick -> Follower trigger has been disabled
+n32=        .timer[FOLLOWERS_CHECK_ $+ $chan $+ ] off
+n33=        unset %stream_auto_ [ $+ [ $chan ] ]
+n34=
+n35=      }
+n36=    }
+n37=  }
+n38=  if ($1 == !setstreamchan) {
+n39=    if ($nick !isop $chan) { return }
+n40=    if (!$2) { .msg $chan $nick -> Enter the name of the Twitch channel correctly before proceeding | return }
+n41=    if (%stream_auto_ [ $+ [ $chan ] ]) { .msg $chan $nick -> Follow trigger has to be disabled before changing stream channel | return }
+n42=    set %stream_chan_ [ $+ [ $chan ] ] $2
+n43=    .msg $chan $nick -> Twitch stream has been set, you can now use the follow trigger
+n44=  }
+n45=  if ($1 == !streamchan) {
+n46=    if ($nick !isop $chan) { return }
+n47=    if (!%stream_chan_ [ $+ [ $chan ] ]) { .msg $chan $nick -> no Twitch channel has been set | return }
+n48=    .msg $chan ( $+ $nick $+ ): The $chan Twitch Stream Channel is now:  $+ %stream_chan_ [ $+ [ $chan ] ] $+ 
+n49=  }
+n50=  if ($1 == !followed) {
+n51=    if ($nick !isop $chan) { return }
+n52=    if (!$2) { .msg $chan $nick -> Enter the Twitch username correctly before proceeding | return }
+n53=    var %stc = %stream_chan_ [ $+ [ $chan ] ]
+n54=    var %h = ls_followers_ [ $+ [ %stc ] $+ ] _ [ $+ [ $chan ] ]
+n55=    if (!$hget(%h)) { .msg $chan $nick -> Follower not found | return }
+n56=    if (!$hfind(%h,$2)) { .msg $chan $nick -> Follower not found | return }
+n57=    var %fl = $hget(%h,$2)
+n58=    var %timeago = $_timeago($calc($ctime - %fl)).all
+n59=    .msg $chan $nick -> The user $qt( $+ $2 $+ ) followed $chan on  $+ $date(%fl,ddd ddoo mmm yyyy HH:nn:ss) $+  $iif(%timeago,( $+ $v1 $+ ))
+n60=  }
+n61=  if ($1 == !lastfollow) {
+n62=    if ($nick !isop $chan) { return }
+n63=    var %stc = %stream_chan_ [ $+ [ $chan ] ]
+n64=    var %h = ls_followers_last_ [ $+ [ %stc ] $+ ] _ [ $+ [ $chan ] ]
+n65=    if (!$hget(%h)) { .msg $chan $nick -> follower not found | return }
+n66=    if (!$hget(%h,1).item) { .msg $chan $nick -> Can't find the last follower for the stream | return }
+n67=    var %fl = $hget(%h,1).data
+n68=    var %fln = $hget(%h,1).item
+n69=    var %timeago = $_timeago($calc($ctime - %fl)).all
+n70=    .msg $chan $nick -> The most recent follower is $qt( $+ %fln $+ ) which followed the channel on $date(%fl,ddd ddoo mmm yyyy HH:nn:ss) $+  $iif(%timeago,( $+ $v1 $+ ))
+n71=  }
+n72=}
+n73=
+n74=alias twitch_check_new {
+n75=  if (!$1-) { return }
+n76=  if (!%stream_auto_ [ $+ [ $1 ] ]) { .timer[FOLLOWERS_CHECK_ $+ $1 $+ ] off | return }
+n77=  if ($me !ison $1) { .timer[FOLLOWERS_CHECK_ $+ $1 $+ ] off | return }
+n78=  var %u = https://api.twitch.tv/kraken/channels/ $+ $2 $+ /follows?limit=1&nocache= $+ $ticks
+n79=  var %v = twc_ $+ $ticks
+n80=  JSONOpen -ud %v %u
+n81=  if (%JSONError) { goto end | return }
+n82=  var %followed = $json(%v,follows,0,created_at)
+n83=  if (%followed) {
+n84=    var %followed = $replace($remove(%followed,$chr(122)),$chr(116),$chr(32))
+n85=    var %ctime = $ctime(%followed)
+n86=    var %followed = $date(%ctime,ddd ddoo mmm yyyy HH:nn:ss)
+n87=    var %followed_ago = $_timeago($calc($ctime - %ctime)).all
+n88=  }
+n89=  var %type = $json(%v,follows,0,user,type)
+n90=  var %name = $json(%v,follows,0,user,display_name)
+n91=  var %followfile = followfile.ini
+n92=  if (!%name) { var %name = $json(%v,follows,0,user,name) }
+n93=  if (!%name) { goto end | return }
+n94=  var %uu = https://api.twitch.tv/kraken/streams/ $+ $2
+n95=  var %vv = twl_ $+ $ticks
+n96=  JSONOpen -ud %vv %uu
+n97=  if (%JSONError) { goto end | return }
+n98=
+n99=  if (!$hget(ls_followers_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ])) { hmake ls_followers_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ] 500 }
+n100=  if ($hfind(ls_followers_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ],%name)) { goto end | return }
+n101=  hadd -m ls_followers_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ] %name $ctime(%followed)
+n102=  if ($hget(ls_followers_last_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ])) { hfree $v1 }
+n103=  hadd -m ls_followers_last_ [ $+ [ $2 ] $+ ] _ [ $+ [ $1 ] ] %name $ctime(%followed)
+n104=  var %t = $readini(followfile.ini,n,$chan,followergreet)
+n105=  if (%t) {
+n106=    .msg $1 %name ( $+ %type $+ ) -> %t
+n107=  }
+n108=  else {
+n109=    .msg $1 %name ( $+ %type $+ ) -> welcome and thank you for following the channel %t
+n110=  }
+n111=  :end
+n112=  JSONClose %v
+n113=  JSONClose %vv
+n114=}
+n115=
+n116=alias _timeago {
+n117=  if (!$1) { return 0 }
+n118=  if ($1) && ($1 !isnum) { return 0 }
+n119=  if ($prop == all) {
+n120=    var %s = $nduration($1)
+n121=    var %s = $replacex(%s,wks,$chr(32) weeks.,wk,$chr(32) week.)
+n122=    var %s = $replacex(%s,days,$chr(32) days.,day,$chr(32) day.)
+n123=    if (*min* iswm %s) { var %s = $replacex(%s,hrs,$chr(32) hours.,hr,$chr(32) hour.) }
+n124=    if (*min* !iswm %s) { var %s = $replacex(%s,hrs,$chr(32) hours,hr,$chr(32) hour) }
+n125=    if (*sec* iswm %s) { var %s = $replacex(%s,mins,$chr(32) minutes.,min,$chr(32) minute.) }
+n126=    if (*sec* !iswm %s) { var %s = $replacex(%s,mins,$chr(32) minutes,min,$chr(32) minute) }
+n127=    var %s = $replacex(%s,secs,$chr(32) seconds,sec,$chr(32) second)
+n128=    var %s = $replace(%s,$chr(46),$chr(44))
+n129=    return $iif(%s,%s ago,0)
+n130=  }
+n131=  if ($1 <= 59) { return $1 $iif($1 == 1,second,seconds) ago }
+n132=  if (($1 <= 3599) && ($1 > 59)) { return $floor($calc($1 / 60)) $iif($floor($calc($1 / 60)) == 1,minute,minutes) ago }
+n133=  if (($1 <= 86399) && ($1 > 3599)) { return $round($calc($1 / 3600),0) $iif($round($calc($1 / 3600),0) == 1,hour,hours) ago }
+n134=  if (($1 <= 2592000) && ($1 > 86399)) { return $floor($calc($1 / 86400)) $iif($floor($calc($1 / 86400)) > 1,days,day) $+ , $round($calc($calc($1 - $calc($floor($calc($1 / 86400))*86400)) / 3600),0) $iif($round($calc($calc($1 - $calc($floor($calc($1 / 86400))*86400)) / 3600),0) > 1,hours,hour) ago }
+n135=  if (($1 <= 31540000) && ($1 > 2592000)) { return $floor($calc($1 / 2592000)) $iif($floor($calc($1 / 2592000)) > 1,months,month) $+ , $round($calc($calc($1 - $calc($floor($calc($1 / 2592000))*2592000)) / 86400),0) $iif($round($calc($calc($1 - $calc($floor($calc($1 / 2592000))*2592000)) / 86400),0) > 1,days,day) ago }
+n136=  if ($1 > 31104000) { return $floor($calc($1 / 31104000)) $iif($floor($calc($1 / 31104000)) > 1,years,year) $+ , $round($calc($calc($1 - $calc($floor($calc($1 / 31104000))*31104000)) / 2592000),0) $iif($round($calc($calc($1 - $calc($floor($calc($1 / 31104000))*31104000)) / 2592000),0) > 1,months,month) ago }
+n137=}
