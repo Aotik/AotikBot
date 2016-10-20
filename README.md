@@ -1,7 +1,9 @@
 # AotikBot
 
 Aotikbot is a bot made to work for Twitch TV (http://www.twitch.tv/). The main purpose is to monitor the chat and act as a broadcasters assistant.
-It is still in the Alpha development stage, and has only been tested on very few channels.
+Alpha development stage; has only been tested on very few channels. Built in MSL.
+
+**_No longer under development_**
 
 # Features
 - Autojoin channels on connect
@@ -19,3 +21,5 @@ It is still in the Alpha development stage, and has only been tested on very few
 - Points system
 - Uptime calculation
 - Moderator help
+
+Licensed under MIT
