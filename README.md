@@ -19,8 +19,3 @@ It is still in the Alpha development stage, and has only been tested on very few
 - Points system
 - Uptime calculation
 - Moderator help
-
-<br> http://www.aotikbot.tv/ - (landing page)
-<br> http://multi.aotikbot.tv/
-<br> http://dashboard.aotikbot.tv/ - (soon to be updated)
-<br> http://docs.aotikbot.tv/ - (soon to be updated)
